@@ -1,0 +1,6 @@
+{
+  "aliases": {
+    "chat/llama-small": {"provider": "groq", "model": "<id_groq>"},
+    "chat/qwen-small": {"provider": "fireworks", "model": "<id_fireworks>"}
+  }
+}
