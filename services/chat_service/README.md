@@ -137,4 +137,35 @@ Um JSON contendo:
 
 ---
 
+---
 
+## 🖥️ Usar a CLI
+
+A **CLI** permite interagir com o serviço diretamente do terminal.
+
+Na raiz do projeto (`/repo`), use o comando `python -m` para executar a CLI.
+
+### 🔹 Listar Modelos
+
+```bash
+python -m services.chat_service.app.cli.cli models
+```
+
+**Resposta esperada:**  
+A lista de aliases do seu `models.json`.
+
+---
+
+### 🔹 Chat
+
+```bash
+python -m services.chat_service.app.cli.cli chat --model chat/llama-small --user "Explique o que e consistencia eventual."
+```
+
+**Resposta esperada:**  
+Um JSON com:
+- A resposta do modelo
+- Métricas
+- Uso de tokens
+
+---
