@@ -135,7 +135,7 @@ Um JSON contendo:
 - Métricas de uso
 - Latência
 
----
+
 
 ---
 
@@ -182,3 +182,28 @@ O serviço de chat foi projetado para ser responsivo e não bloqueante. Para iss
 Essa abordagem garante que a API não seja bloqueada por chamadas de longa duração ao modelo de IA, permitindo que ela processe outras requisições em paralelo e mantendo a alta performance do serviço.
 
 ---
+
+
+## ✅ Validação de Startup
+
+O serviço executa uma série de verificações automáticas na inicialização para garantir que o ambiente está configurado corretamente. A validação inclui:
+
+* Checagem do arquivo `models.json`.
+* Verificação das chaves de API necessárias no `.env`.
+* Um ping leve em cada provedor configurado para validar a conexão e a autenticação.
+
+Se alguma dessas validações falhar, o serviço não iniciará e exibirá uma mensagem de erro clara no terminal.
+
+---
+
+## 📊 Métricas e Telemetria
+
+O serviço gera logs e métricas de telemetria em tempo de execução na pasta `runs/`.
+
+* **`manifest.json`**: Este arquivo de metadados é gerado por execução (`run_id`). Ele registra informações sobre o ambiente, como o hash do Git (`git_sha`), a versão do Python e as dependências.
+* **`interactions.jsonl`**: Este é o arquivo principal de logs, onde cada linha é um JSON contendo os dados de uma interação com o modelo de chat. Ele inclui métricas como `latency_ms` e `usage.total_tokens` para cada requisição.
+
+Você pode habilitar o log completo da conversa (mensagens de entrada e saída) definindo a variável `LOG_MESSAGES` no seu arquivo `.env`:
+
+```env
+LOG_MESSAGES=true
