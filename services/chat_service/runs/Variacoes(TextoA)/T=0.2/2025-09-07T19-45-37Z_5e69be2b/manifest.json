@@ -1,0 +1,15 @@
+{
+  "run_id": "2025-09-07T19-45-37Z_5e69be2b",
+  "service": "chat_service",
+  "started_at": "2025-09-07T19:45:37.859609",
+  "git_sha": "ef78105929801a45e43c614130b52f5b2303d26c",
+  "python_version": "3.11.13",
+  "packages": {
+    "litellm": "x.y.z",
+    "fastapi": "x.y.z"
+  },
+  "aliases_loaded": [
+    "chat/llama-small",
+    "chat/qwen-small"
+  ]
+}
