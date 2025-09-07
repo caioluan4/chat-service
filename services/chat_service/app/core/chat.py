@@ -1,8 +1,16 @@
+# Arquivo: app/core/chat.py
+
 import litellm
 import os
 import json
 import time
+import uuid
 
+# Comando para o litellm descartar parametros nao suportados
+litellm.drop_params = True
+
+# Defina um timeout padrao para a chamada
+DEFAULT_TIMEOUT = 30 # segundos
 
 def chat(
     messages: list,
@@ -12,73 +20,106 @@ def chat(
     max_tokens: int = 512,
     seed: int = 42,
     stream: bool = False,
-    json_mode: bool = False
+    json_mode: bool = False,
+    timeout: int = DEFAULT_TIMEOUT # Adicione o parametro de timeout
 ) -> dict:
     """
     Função principal que interage com os modelos de chat via LiteLLM.
     """
     
-    # RESOLVER MODEL_ALIAS 
-    # Caminho para o arquivo models.json
+    request_id = str(uuid.uuid4())[:8]
+
+    # RESOLVER MODEL_ALIAS
     config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'models.json')
     
     try:
         with open(config_path, 'r') as f:
             config = json.load(f)
         
-        # Procura o alias no dicionário
         model_info = config['aliases'][model_alias]
         provider = model_info['provider']
         model = model_info['model']
         
-        # Combina provedor e modelo para a chamada do LiteLLM
+    except FileNotFoundError:
+        return {
+            "error": {"code": "CONFIG_ERROR", "message": "Config file not found"},
+            "provider": None,
+            "model": None,
+            "request_id": request_id
+        }
+    except KeyError:
+        return {
+            "error": {"code": "MODEL_ALIAS_NOT_FOUND", "message": f"Model alias '{model_alias}' not found in config"},
+            "provider": None,
+            "model": None,
+            "request_id": request_id
+        }
+
+    # CHAMAR O LITELLM E CAPTURAR AS MÉTRICAS
+    start_time = time.time()
+    
+    try:
         litellm_model = f"{provider}/{model}"
         
-    except FileNotFoundError:
-        # Erro se o arquivo models.json não for encontrado
-        return {"error": "Config file not found"}
-    except KeyError:
-        # Erro se o alias não for encontrado no arquivo
-        return {"error": f"Model alias '{model_alias}' not found in config"}
+        # Parâmetros unificados para a chamada
+        params = {
+            "model": litellm_model,
+            "messages": messages,
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_tokens": max_tokens,
+            "seed": seed,
+            "stream": stream,
+            "timeout": timeout 
+        }
 
-    #CHAMAR O LITELLM E CAPTURAR AS MÉTRICAS 
-
-    start_time = time.time()
-    try:
-        response = litellm.completion(
-            model=litellm_model,
-            messages=messages,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
-            seed=seed,
-            stream=False,
-            #json_mode=json_mode
-        )
+        # Adiciona o JSON mode se aplicável
+        if json_mode:
+            params["response_format"] = {"type": "json_object"}
+            params["messages"].append({"role": "system", "content": "Return the response in JSON format."})
+            
+        response = litellm.completion(**params)
+        
         latency_ms = (time.time() - start_time) * 1000
 
         # Extrair dados da resposta
         output_text = response.choices[0].message.content
         usage = response.usage
         effective_model = response.model
-        effective_provider = response.model.split('/')[0] # Extrai o provedor do nome do modelo
+        effective_provider = response.model.split('/')[0]
 
+        return {
+            "output_text": output_text,
+            "provider": effective_provider,
+            "model": effective_model,
+            "usage": {
+                "prompt_tokens": usage.prompt_tokens,
+                "completion_tokens": usage.completion_tokens,
+                "total_tokens": usage.total_tokens
+            },
+            "latency_ms": int(round(latency_ms)),
+            "cost_estimated": None,
+            "request_id": request_id
+        }
+    # Tratamento de exceções específicas
+    except litellm.exceptions.Timeout:
+        return {
+            "error": {"code": "TIMEOUT_ERROR", "message": "The request timed out."},
+            "provider": provider,
+            "model": model,
+            "request_id": request_id
+        }
     except litellm.exceptions.AuthenticationError:
-        return {"error": "Authentication failed. Check your API key in .env"}
+        return {
+            "error": {"code": "AUTH_ERROR", "message": "Authentication failed. Check your API key in .env"},
+            "provider": provider,
+            "model": model,
+            "request_id": request_id
+        }
     except Exception as e:
-        return {"error": f"An error occurred: {e}"}
-
-    # RETORNAR O RESULTADO FINAL
-    return {
-        "output_text": output_text,
-        "provider": effective_provider,
-        "model": effective_model,
-        "usage": {
-            "prompt_tokens": usage.prompt_tokens,
-            "completion_tokens": usage.completion_tokens,
-            "total_tokens": usage.total_tokens
-        },
-        "latency_ms": round(latency_ms, 2),
-        "cost_estimated": None
-    }
-   
+        return {
+            "error": {"code": "PROVIDER_ERROR", "message": f"An error occurred with the provider: {e}"},
+            "provider": provider,
+            "model": model,
+            "request_id": request_id
+        }

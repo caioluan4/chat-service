@@ -42,7 +42,7 @@ pip install litellm fastapi uvicorn python-dotenv
 
    ```env
    GROQ_API_KEY=sua_chave_groq
-   FIREWORKS_API_KEY=sua_chave_fireworks
+   FIREWORKS_AI_API_KEY=sua_chave_fireworks
    ```
 
 2. Crie o arquivo **models.json** em `config/` com os aliases:
@@ -55,8 +55,8 @@ pip install litellm fastapi uvicorn python-dotenv
          "model": "llama-3.1-8b-instant"
        },
        "chat/qwen-small": {
-         "provider": "fireworks",
-         "model": "qwen-2-7b-instruct"
+         "provider": "fireworks_ai",
+         "model": "accounts/fireworks/models/qwen2p5-vl-32b-instruct"
        }
      }
    }
@@ -167,5 +167,18 @@ Um JSON com:
 - A resposta do modelo
 - Métricas
 - Uso de tokens
+
+---
+
+
+
+## ⚡ Política Assíncrona (Async)
+
+O serviço de chat foi projetado para ser responsivo e não bloqueante. Para isso, seguimos a seguinte política:
+
+* **Lógica do Core**: A função `chat` em `app/core/chat.py` é **síncrona**. Ela lida com a lógica de chamada à API do LiteLLM de forma simples e direta.
+* **API FastAPI**: O endpoint `POST /chat` é **assíncrono** (`async`). Ele usa o utilitário `fastapi.concurrency.to_thread.run_sync` para executar a função síncrona do core em um thread separado.
+
+Essa abordagem garante que a API não seja bloqueada por chamadas de longa duração ao modelo de IA, permitindo que ela processe outras requisições em paralelo e mantendo a alta performance do serviço.
 
 ---

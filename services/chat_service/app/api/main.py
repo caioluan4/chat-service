@@ -1,13 +1,24 @@
+# Arquivo: app/api/main.py
+
 from dotenv import load_dotenv
 load_dotenv()
 
 
-from fastapi import FastAPI
 from pydantic import BaseModel, Field, conlist
 from typing import List, Dict, Any, Optional
+from fastapi import FastAPI, HTTPException
+from typing import Dict, Any
 import json
 import os
 
+
+from services.chat_service.app.core.startup import validate_startup
+
+# Importa to_thread para usar a política assíncrona
+from fastapi.concurrency import to_thread
+
+# Importa os modelos Pydantic de types
+from services.chat_service.app.types import ChatRequest, ChatResponse, ChatMessage
 
 # Importa a lógica do core
 from services.chat_service.app.core.chat import chat
@@ -15,23 +26,10 @@ from services.chat_service.app.core.chat import chat
 # Cria a instância da sua aplicação FastAPI
 app = FastAPI()
 
-# Definição do esquema de dados da requisição
-class ChatMessage(BaseModel):
-    role: str
-    content: str
+# Executa a validação na inicialização do serviço
+validate_startup()
 
-class ChatParams(BaseModel):
-    temperature: float = 0.2
-    top_p: float = 0.9
-    max_tokens: int = 512
-    seed: Optional[int] = 42
-    stream: bool = False
-    json_mode: bool = False
 
-class ChatRequest(BaseModel):
-    model: str
-    messages: List[ChatMessage]
-    params: Optional[ChatParams] = ChatParams()
 
 
 # Endpoint para checagem de saúde
@@ -74,15 +72,16 @@ def get_models():
 
 # Endpoint para o chat
 @app.post("/chat")
-def chat_endpoint(request: ChatRequest) -> Dict[str, Any]:
+async def chat_endpoint(request: ChatRequest) -> ChatResponse:
     """
     Recebe uma requisição de chat e retorna a resposta do modelo de IA.
     """
-    # Chama a função de chat do core
-    response = chat(
-        messages=[m.dict() for m in request.messages],
+    
+    response = await to_thread.run_sync(
+        chat,
+        messages=[m.model_dump() for m in request.messages],
         model_alias=request.model,
-        **request.params.dict()
+        **request.params.model_dump() if request.params else {}
     )
 
-    return response
+    return ChatResponse(**response)
