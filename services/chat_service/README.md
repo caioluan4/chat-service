@@ -177,11 +177,10 @@ Um JSON com:
 O serviço de chat foi projetado para ser responsivo e não bloqueante. Para isso, seguimos a seguinte política:
 
 * **Lógica do Core**: A função `chat` em `app/core/chat.py` é **síncrona**. Ela lida com a lógica de chamada à API do LiteLLM de forma simples e direta.
-* **API FastAPI**: O endpoint `POST /chat` é **assíncrono** (`async`). Ele usa o utilitário `fastapi.concurrency.to_thread.run_sync` para executar a função síncrona do core em um thread separado.
+* **API FastAPI**: O endpoint `POST /chat` é **assíncrono** (`async`). Ele usa o utilitário `asyncio.to_thread` para executar a função síncrona do core em um thread separado.
 
 Essa abordagem garante que a API não seja bloqueada por chamadas de longa duração ao modelo de IA, permitindo que ela processe outras requisições em paralelo e mantendo a alta performance do serviço.
 
----
 
 
 ## ✅ Validação de Startup

@@ -15,7 +15,8 @@ import os
 from services.chat_service.app.core.startup import validate_startup
 
 # Importa to_thread para usar a política assíncrona
-from fastapi.concurrency import to_thread
+import asyncio
+
 
 # Importa os modelos Pydantic de types
 from services.chat_service.app.types import ChatRequest, ChatResponse, ChatMessage
@@ -77,7 +78,7 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
     Recebe uma requisição de chat e retorna a resposta do modelo de IA.
     """
     
-    response = await to_thread.run_sync(
+    response = await asyncio.to_thread(
         chat,
         messages=[m.model_dump() for m in request.messages],
         model_alias=request.model,
