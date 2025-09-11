@@ -54,16 +54,16 @@ Este método é ideal para um teste rápido e isolado da aplicação.
     ```
 
 2.  **Execute o Contêiner**
-    Quando a construção estiver finalizada, execute o contêiner. Este comando mapeia a porta 8000 da sua máquina local para a porta 8088 dentro do contêiner e carrega as variáveis de ambiente do seu arquivo `.env`.
+    Quando a construção estiver finalizada, execute o contêiner. Este comando mapeia a porta 8000 da sua máquina local para a porta 8000 dentro do contêiner e carrega as variáveis de ambiente do seu arquivo `.env`.
     ```bash
-    docker run --rm -p 8088:8000 --env-file .env chat-service:local
+    docker run --rm -p 8000:8000 --env-file .env chat-service:local
     ```
     > **Nota**: Se a porta 8088 já estiver em uso na sua máquina, você pode mapeá-la para uma porta diferente (ex: `8088:8000`).
 
 3.  **Valide a Aplicação**
     * **Health Check da API**: Abra um novo terminal e use o `curl` para verificar se a API está em execução:
         ```bash
-        curl http://127.0.0.1:8088/healthz
+        curl http://127.0.0.1:8000/healthz
         ```
         Você deve receber uma resposta `200 OK`.
 
@@ -97,7 +97,7 @@ Este perfil é configurado para o desenvolvimento ativo. Ele monta seu código l
         ```
     * **Health Check da API**:
         ```bash
-        curl http://127.0.0.1:8088/healthz
+        curl http://127.0.0.1:8000/healthz
         ```
     * **Execute Comandos da CLI**:
         ```bash
@@ -110,20 +110,30 @@ Este perfil é configurado para o desenvolvimento ativo. Ele monta seu código l
 Este perfil utiliza uma imagem imutável, sem montagem de código ou hot-reloading, simulando um ambiente de produção.
 
 1.  **Inicie o Serviço**
-    Use o perfil `prod` para construir e iniciar o contêiner:
+    Use o perfil `prod` ou `dev` para construir e iniciar o contêiner:
     ```bash
     docker compose --profile prod up -d
+    docker compose --profile dev up -d
     ```
 
 2.  **Valide**
     * **Verifique os Logs**:
         ```bash
         docker compose --profile prod logs -f chat-service-prod
+        docker compose --profile dev logs -f chat-service-prod
         ```
     * **Health Check da API**:
         ```bash
-        curl http://127.0.0.1:8088/healthz
+        curl http://127.0.0.1:8000/healthz
         ```
+
+3.  ** Encerre**
+    * **Comando pra encerrar**:
+    ```bash
+        docker compose --profile dev down
+        docker compose --profile prod down
+
+    ```
 
 ---
 
