@@ -1,0 +1,44 @@
+services:
+  chat-service:
+    build:
+      # O contexto da build é a pasta raiz (..), onde está o .dockerignore e o requirements.txt
+      context: ..
+      # O Dockerfile está na pasta docker/, dentro do contexto
+      dockerfile: docker/Dockerfile
+    image: chat-service:dev
+    env_file:
+      - ../.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../:/app
+      - ../services/chat_service/runs:/app/services/chat_service/runs
+      - ../services/chat_service/config:/app/services/chat_service/config:ro
+    command: >
+      python -m uvicorn services.chat_service.app.api.main:app
+      --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:8000/healthz\", timeout=3)' "]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    profiles: ["dev"]
+
+  chat-service-prod:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: chat-service:prod
+    env_file:
+      - ../.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../services/chat_service/runs:/app/services/chat_service/runs
+      - ../services/chat_service/config:/app/services/chat_service/config:ro
+    command: >
+      python -m uvicorn services.chat_service.app.api.main:app
+      --host 0.0.0.0 --port 8000 --workers 1
+    restart: unless-stopped
+    profiles: ["prod"]
