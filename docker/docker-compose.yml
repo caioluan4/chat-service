@@ -9,7 +9,7 @@ services:
     env_file:
       - ../.env
     ports:
-      - "8000:8000"
+      - "8088:8000"
     volumes:
       - ../:/app
       - ../services/chat_service/runs:/app/services/chat_service/runs
