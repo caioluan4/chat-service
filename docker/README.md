@@ -127,7 +127,7 @@ Este perfil utiliza uma imagem imutável, sem montagem de código ou hot-reloadi
         curl http://127.0.0.1:8000/healthz
         ```
 
-3.  ** Encerre**
+3.  * **Encerre**
     * **Comando pra encerrar**:
     ```bash
         docker compose --profile dev down
