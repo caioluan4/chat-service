@@ -148,6 +148,7 @@ Na raiz do projeto (`/repo`), use o comando `python -m` para executar a CLI.
 ### 🔹 Listar Modelos
 
 ```bash
+docker compose --profile dev exec chat-service \
 python -m services.chat_service.app.cli.cli models
 ```
 
@@ -159,6 +160,7 @@ A lista de aliases do seu `models.json`.
 ### 🔹 Chat
 
 ```bash
+docker compose --profile dev exec chat-service \
 python -m services.chat_service.app.cli.cli chat --model chat/llama-small --user "Explique o que e consistencia eventual."
 ```
 
