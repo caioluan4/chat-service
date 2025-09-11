@@ -1,0 +1,28 @@
+# VCS e IDE
+.git
+.gitignore
+.vscode
+.idea
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.venv
+venv
+dist
+build
+
+# OS / outros
+.DS_Store
+node_modules
+
+# Segredos / env
+.env
+.env.*
+!*.env.example
+
+# Não copie artefatos de infra para a imagem
+docker/
