@@ -7,6 +7,7 @@ load_dotenv()
 from pydantic import BaseModel, Field, conlist
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
+from .endpoints import ingest, chat
 from typing import Dict, Any
 import json
 import os
@@ -25,12 +26,17 @@ from services.chat_service.app.types import ChatRequest, ChatResponse, ChatMessa
 from services.chat_service.app.core.chat import chat
 
 # Cria a instância da sua aplicação FastAPI
-app = FastAPI()
+app = FastAPI(title="Chat service com RAG")
 
 # Executa a validação na inicialização do serviço
 validate_startup()
 
+app.include_router(chat.router, prefix="/api", tags=["Chat"])
+app.include_router(ingest.router, prefix="/api", tags=["Documentos"])
 
+@app.get("/")
+def read_root():
+    return {"status": "Serviço de Chat com RAG está no ar!"}
 
 
 # Endpoint para checagem de saúde

@@ -5,12 +5,15 @@ import os
 import json
 import time
 import uuid
+from app.rag.retriever import get_retriever
 
 # Comando para o litellm descartar parametros nao suportados
 litellm.drop_params = True
 
 # Defina um timeout padrao para a chamada
 DEFAULT_TIMEOUT = 30 # segundos
+
+
 
 def chat(
     messages: list,
@@ -21,13 +24,44 @@ def chat(
     seed: int = 42,
     stream: bool = False,
     json_mode: bool = False,
-    timeout: int = DEFAULT_TIMEOUT # Adicione o parametro de timeout
+    timeout: int = DEFAULT_TIMEOUT,
+    use_rag: bool = True
 ) -> dict:
     """
     Função principal que interage com os modelos de chat via LiteLLM.
+    Pode opcionalmente usar RAG para enriquecer o contexto.
     """
     
     request_id = str(uuid.uuid4())[:8]
+
+   
+    if use_rag:
+        if not messages or messages[-1].get("role") != "user":
+            return {
+                "error": {"code": "INVALID_INPUT", "message": "Para usar RAG, a última mensagem deve ser do usuário."},
+                "request_id": request_id
+            }
+
+        query = messages[-1]["content"]
+
+        # 1. Buscar contexto relevante no Qdrant
+        retriever = get_retriever()
+        retrieved_docs = retriever.get_relevant_documents(query)
+
+        # 2. Formatar o contexto para incluir no prompt
+        context = "\n\n".join([doc.page_content for doc in retrieved_docs])
+
+        # 3. Criar o prompt aumentado (RAG) e substituir a lista de mensagens
+        prompt_template = f"""Você é um assistente prestativo. Responda à pergunta do usuário com base apenas no seguinte contexto:
+
+Contexto:
+{context}
+
+Pergunta: {query}"""
+        
+        # A lista de mensagens original é substituída pelo prompt do RAG
+        messages = [{"role": "user", "content": prompt_template}]
+    # ^-- FIM DO BLOCO RAG
 
     # RESOLVER MODEL_ALIAS
     config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'models.json')
