@@ -5,3 +5,10 @@ python-dotenv~=1.0
 httpx~=0.27
 litellm~=1.44
 pydantic~=2.8
+
+# Novas dependências para RAG com Qdrant
+langchain
+qdrant-client
+pypdf
+sentence-transformers
+python-multipart

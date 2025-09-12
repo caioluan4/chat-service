@@ -1,19 +1,25 @@
+version: "3.9"
+
 services:
+  # Perfil de Desenvolvimento
   chat-service:
     build:
-      # O contexto da build é a pasta raiz (..), onde está o .dockerignore e o requirements.txt
       context: ..
-      # O Dockerfile está na pasta docker/, dentro do contexto
       dockerfile: docker/Dockerfile
     image: chat-service:dev
     env_file:
       - ../.env
+    # NOVO: Variável de ambiente para a aplicação encontrar o Qdrant
+    environment:
+      - QDRANT_URL=http://qdrant:6333
     ports:
       - "8000:8000"
     volumes:
       - ../:/app
       - ../services/chat_service/runs:/app/services/chat_service/runs
       - ../services/chat_service/config:/app/services/chat_service/config:ro
+      # NOVO: Volume para a pasta de documentos que vamos criar
+      - ../documents:/app/documents
     command: >
       python -m uvicorn services.chat_service.app.api.main:app
       --host 0.0.0.0 --port 8000 --reload
@@ -23,8 +29,15 @@ services:
       timeout: 5s
       retries: 3
     restart: unless-stopped
+    # NOVO: Garante que o Qdrant inicie antes da sua aplicação
+    depends_on:
+      - qdrant
+    # NOVO: Conecta o serviço à rede compartilhada
+    networks:
+      - chatnet
     profiles: ["dev"]
 
+  # Perfil de Produção
   chat-service-prod:
     build:
       context: ..
@@ -32,13 +45,41 @@ services:
     image: chat-service:prod
     env_file:
       - ../.env
+    # NOVO: Variável de ambiente para a aplicação encontrar o Qdrant
+    environment:
+      - QDRANT_URL=http://qdrant:6333
     ports:
       - "8000:8000"
     volumes:
       - ../services/chat_service/runs:/app/services/chat_service/runs
       - ../services/chat_service/config:/app/services/chat_service/config:ro
+      # NOVO: Volume para a pasta de documentos
+      - ../documents:/app/documents
     command: >
       python -m uvicorn services.chat_service.app.api.main:app
       --host 0.0.0.0 --port 8000 --workers 1
     restart: unless-stopped
+    # NOVO: Garante que o Qdrant inicie antes da sua aplicação
+    depends_on:
+      - qdrant
+    # NOVO: Conecta o serviço à rede compartilhada
+    networks:
+      - chatnet
     profiles: ["prod"]
+
+  # NOVO: Serviço do banco de dados vetorial Qdrant
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333" # Porta para a API do Qdrant
+    volumes:
+      - qdrant_data:/qdrant/storage # Volume para persistir os dados
+    networks:
+      - chatnet
+
+# NOVO: Bloco para definir volumes e redes
+volumes:
+  qdrant_data:
+
+networks:
+  chatnet:
