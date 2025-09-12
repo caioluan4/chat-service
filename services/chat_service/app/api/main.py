@@ -3,7 +3,6 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from .endpoints import ingest
 from pydantic import BaseModel, Field, conlist
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
@@ -87,4 +86,3 @@ async def chat_endpoint(request: ChatRequest) -> ChatResponse:
 
     return ChatResponse(**response)
 
-app.include_router(ingest.router, prefix="/api", tags=["Documentos"])
