@@ -1,94 +1,50 @@
-# Arquivo: app/api/main.py
+# services/chat_service/app/api/main.py
 
+import os
+import json
+from fastapi import FastAPI, HTTPException
 from dotenv import load_dotenv
+
+# Carrega as variáveis de ambiente do .env
 load_dotenv()
 
-from pydantic import BaseModel, Field, conlist
-from typing import List, Dict, Any, Optional
-from fastapi import FastAPI, HTTPException
+# 1. Importa APENAS os módulos de endpoints
 from .endpoints import ingest, chat
-from typing import Dict, Any
-import json
-import os
-
-
-from services.chat_service.app.core.startup import validate_startup
-
-# Importa to_thread para usar a política assíncrona
-import asyncio
-
-
-# Importa os modelos Pydantic de types
-from services.chat_service.app.types import ChatRequest, ChatResponse, ChatMessage
-
-# Importa a lógica do core
-from services.chat_service.app.core.chat import chat
+from app.core.startup import validate_startup
 
 # Cria a instância da sua aplicação FastAPI
-app = FastAPI(title="Chat service com RAG")
+app = FastAPI(title="Chat Service com RAG")
 
 # Executa a validação na inicialização do serviço
 validate_startup()
 
-app.include_router(chat.router, prefix="/api", tags=["Chat"])
-app.include_router(ingest.router, prefix="/api", tags=["Documentos"])
+# 2. Inclui os routers dos módulos importados
+app.include_router(chat.router, prefix="/api")
+app.include_router(ingest.router, prefix="/api")
 
-@app.get("/")
+# --- Endpoints que pertencem ao main.py ---
+
+@app.get("/", tags=["Status"])
 def read_root():
     return {"status": "Serviço de Chat com RAG está no ar!"}
 
-
-# Endpoint para checagem de saúde
-@app.get("/healthz")
+@app.get("/healthz", tags=["Status"])
 def healthz():
-    """
-    Retorna o status do serviço.
-    """
+    """Retorna o status de saúde do serviço."""
     return {"status": "ok"}
 
-# Endpoint para checagem dos modelos disponiveis
-@app.get("/models")
+@app.get("/models", tags=["Models"])
 def get_models():
-    """
-    Retorna a lista de aliases e suas resoluções do arquivo models.json.
-    """
-    # Define o caminho para o arquivo de configuração de forma relativa.
-    # A partir da localização do main.py, volta duas pastas e entra em 'config'
+    """Retorna a lista de modelos disponíveis."""
     config_path = os.path.join(
         os.path.dirname(__file__), '..', '..', 'config', 'models.json'
     )
-    
     try:
-        # Abre e lê o arquivo models.json.
         with open(config_path, "r") as f:
             models_config = json.load(f)
-        
-        # Retorna o dicionário de aliases
         return models_config.get("aliases", {})
-    
     except FileNotFoundError:
-        # Lança uma exceção HTTP 404 se o arquivo não for encontrado
         raise HTTPException(status_code=404, detail="models.json not found")
     except Exception as e:
-        # Lança uma exceção HTTP 500 para outros erros
-        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
-
-    
-
-
-# Endpoint para o chat
-@app.post("/chat")
-async def chat_endpoint(request: ChatRequest) -> ChatResponse:
-    """
-    Recebe uma requisição de chat e retorna a resposta do modelo de IA.
-    """
-    
-    response = await asyncio.to_thread(
-        chat,
-        messages=[m.model_dump() for m in request.messages],
-        model_alias=request.model,
-        **request.params.model_dump() if request.params else {}
-    )
-
-    return ChatResponse(**response)
+        raise HTTPException(status_code=500, detail=str(e))
 

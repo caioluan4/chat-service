@@ -12,3 +12,5 @@ qdrant-client
 pypdf
 sentence-transformers
 python-multipart
+
+langchain-community

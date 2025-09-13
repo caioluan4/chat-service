@@ -1,8 +1,8 @@
 import os
 import shutil
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from app.core.rag.loader import load_and_split_pdf
-from app.core.rag.vector_store import save_chunks_to_qdrant
+from app.rag.loader import load_and_split_pdf
+from app.rag.vector_store import save_chunks_to_qdrant 
 
 router = APIRouter()
 

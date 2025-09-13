@@ -1,5 +1,3 @@
-# Arquivo: app/core/chat.py
-
 import litellm
 import os
 import json

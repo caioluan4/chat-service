@@ -1,5 +1,6 @@
-from langchain.schema.retriever import VectorStoreRetriever
-from langchain.vectorstores import Qdrant
+
+from langchain.vectorstores.base import VectorStoreRetriever
+from langchain_community.vectorstores import Qdrant
 
 from app.rag.vector_store import COLLECTION_NAME, get_embeddings, get_qdrant_client
 
