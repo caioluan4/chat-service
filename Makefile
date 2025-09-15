@@ -6,8 +6,8 @@ IMAGE_NAME := chat-service
 IMAGE_TAG := local
 
 # Comandos base para cada ambiente, evitando repetição.
-DEV_COMPOSE := docker compose --profile dev
-PROD_COMPOSE := docker compose --profile prod
+DEV_COMPOSE := docker compose -f docker/docker-compose.yml --profile dev
+PROD_COMPOSE := docker compose -f docker/docker-compose.yml --profile prod
 DEV_SERVICE_NAME := chat-service
 PROD_SERVICE_NAME := chat-service-prod
 
