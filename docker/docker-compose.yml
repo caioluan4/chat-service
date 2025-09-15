@@ -6,13 +6,16 @@ services:
       # O Dockerfile está na pasta docker/, dentro do contexto
       dockerfile: docker/Dockerfile
     image: chat-service:dev
-    
+  
     environment:
       - PYTHONPATH=/app 
     env_file:
       - ../.env
     ports:
       - "8000:8000"
+
+    user: "${UID}:${GID}"
+
     volumes:
       - ../:/app
       - ../services/chat_service/runs:/app/services/chat_service/runs
