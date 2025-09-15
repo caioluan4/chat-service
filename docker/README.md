@@ -137,6 +137,41 @@ Este perfil utiliza uma imagem imutável, sem montagem de código ou hot-reloadi
 
 ---
 
+
+### Opção 3: Usando o Makefile (Super Recomendado)
+
+Para simplificar a interação com o Docker, este projeto inclui um `Makefile` que transforma comandos longos e complexos em atalhos curtos e fáceis de lembrar.
+
+**Como usar:**
+* **Comando Básico:** `make <atalho>` (ex: `make up`)
+* **Comandos com Parâmetros:** Para os testes de chat, você pode passar variáveis diretamente na linha de comando para customizar a execução.
+  * `make chat PROMPT="Qual a capital do Brasil?"`
+  * `make test-chat-api MODEL="chat/qwen-small" TEMP=0.8`
+
+
+| Comando `make` | Descrição Detalhada | Exemplo de Uso / Opções |
+| :--- | :--- | :--- |
+| **Ajuda e Limpeza** |
+| `make help` | Exibe uma lista de todos os atalhos disponíveis diretamente no seu terminal. | `make help` |
+| `make prune` | **(Cuidado)** Remove todos os recursos Docker não utilizados: contêineres parados, redes e imagens pendentes. Ideal para liberar espaço em disco. | `make prune` |
+| **Imagem Docker** |
+| `make build` | Constroi a imagem Docker a partir do `Dockerfile`, nomeando-a como `chat-service:local`. | `make build` |
+| `make run` | Executa um contêiner avulso da imagem local. Útil para um teste rápido e isolado, sem o Docker Compose. Requer um arquivo `.env`. | `make run` |
+| **Ambiente de Desenvolvimento** |
+| `make up` | Inicia todo o ambiente de desenvolvimento em background (`-d`). Usa o perfil `dev` do Docker Compose. | `make up` |
+| `make down` | Para e remove os contêineres, redes e volumes criados pelo `make up`. | `make down` |
+| `make logs` | Mostra os logs do serviço de chat em tempo real (`-f`), permitindo acompanhar o que acontece na aplicação. | `make logs` |
+| `make exec` | Abre um terminal interativo (`bash`) dentro do contêiner. Essencial para depuração e execução de comandos manuais. | `make exec` <br> `make exec cmd="ls -la /app"` |
+| **Ambiente de Produção** |
+| `make prod-up` | Inicia o ambiente de produção em background. Usa o perfil `prod` do Docker Compose. | `make prod-up` |
+| `make prod-down`| Para e remove os contêineres de produção. | `make prod-down` |
+| `make prod-logs`| Mostra os logs do serviço de produção em tempo real. | `make prod-logs` |
+| **Testes da Aplicação** |
+| `make test-health` | Envia uma requisição para o endpoint `/healthz` da API para verificar se o serviço está online e respondendo. | `make test-health` |
+| `make test-models` | Envia uma requisição para o endpoint `/models` da API para listar os modelos de chat disponíveis no `models.json`. | `make test-models` |
+| `make chat` | Interage com o serviço através da **CLI** (linha de comando). Permite customizar a chamada com diversas variáveis. | **Básico:**<br>`make chat PROMPT="Qual a capital do Japão?"`<br><br>**Avançado:**<br>`make chat MODEL="chat/qwen-small" PROMPT="Fale sobre a lua" SYSTEM_PROMPT="Aja como um poeta" TEMP=0.9 MAX_TOKENS=100` |
+| `make test-chat-api` | Interage com o serviço através da **API** (endpoint `/chat`). Também permite customizar todos os parâmetros da chamada. | **Básico:**<br>`make test-chat-api PROMPT="Qual a capital da Itália?"`<br><br>**Avançado:**<br>`make test-chat-api MODEL="chat/qwen-small" PROMPT="Fale sobre buracos negros" SYSTEM_PROMPT="Explique de forma simples" TEMP=0.5` |
+
 ## 🛠️ Funcionalidades e Boas Práticas
 
 Esta configuração Docker foi construída com os seguintes princípios em mente:
