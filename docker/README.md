@@ -158,10 +158,10 @@ Para simplificar a interação com o Docker, este projeto inclui um `Makefile` q
 | `make build` | Constroi a imagem Docker a partir do `Dockerfile`, nomeando-a como `chat-service:local`. | `make build` |
 | `make run` | Executa um contêiner avulso da imagem local. Útil para um teste rápido e isolado, sem o Docker Compose. Requer um arquivo `.env`. | `make run` |
 | **Ambiente de Desenvolvimento** |
-| `make up` | Inicia todo o ambiente de desenvolvimento em background (`-d`). Usa o perfil `dev` do Docker Compose. | `make up` |
-| `make down` | Para e remove os contêineres, redes e volumes criados pelo `make up`. | `make down` |
-| `make logs` | Mostra os logs do serviço de chat em tempo real (`-f`), permitindo acompanhar o que acontece na aplicação. | `make logs` |
-| `make exec` | Abre um terminal interativo (`bash`) dentro do contêiner. Essencial para depuração e execução de comandos manuais. | `make exec` <br> `make exec cmd="ls -la /app"` |
+| `make dev-up` | Inicia todo o ambiente de desenvolvimento em background (`-d`). Usa o perfil `dev` do Docker Compose. | `make dev-up` |
+| `make dev-down` | Para e remove os contêineres, redes e volumes criados pelo `make up`. | `make dev-down` |
+| `make dev-logs` | Mostra os logs do serviço de chat em tempo real (`-f`), permitindo acompanhar o que acontece na aplicação. | `make dev-logs` |
+| `make dev-exec` | Abre um terminal interativo (`bash`) dentro do contêiner. Essencial para depuração e execução de comandos manuais. | `make dev-exec` <br> `make exec cmd="ls -la /app"` |
 | **Ambiente de Produção** |
 | `make prod-up` | Inicia o ambiente de produção em background. Usa o perfil `prod` do Docker Compose. | `make prod-up` |
 | `make prod-down`| Para e remove os contêineres de produção. | `make prod-down` |

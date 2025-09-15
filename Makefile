@@ -22,32 +22,32 @@ default: help
 
 build: ## Constroi a imagem Docker localmente.
 	@echo "🏗️  Construindo imagem $(IMAGE_NAME):$(IMAGE_TAG)..."
-	@docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+	@docker build -t $(IMAGE_NAME):$(IMAGE_TAG) -f docker/Dockerfile .
 
 run: ## Executa o contêiner Docker avulso (requer .env).
 	@echo "▶️  Executando contêiner $(IMAGE_NAME):$(IMAGE_TAG)..."
-	@docker run --rm -p 8000:8000 --env-file .env $(IMAGE_NAME):$(IMAGE_TAG)
+	@docker run --rm -p 8000:8000 -d --env-file .env $(IMAGE_NAME):$(IMAGE_TAG)
 
 ## -----------------------------------------------------------------------------
 ## 🛠️  Docker Compose (Desenvolvimento)
 ## -----------------------------------------------------------------------------
 
-up: ## Inicia os serviços de desenvolvimento em background.
+dev-up: ## Inicia os serviços de desenvolvimento em background.
 	@echo "🚀 Iniciando ambiente de desenvolvimento..."
 	@$(DEV_COMPOSE) up -d
 
-down: ## Para e remove os serviços de desenvolvimento.
+dev-down: ## Para e remove os serviços de desenvolvimento.
 	@echo "🛑 Parando ambiente de desenvolvimento..."
 	@$(DEV_COMPOSE) down
 
-logs: ## Exibe os logs do serviço de desenvolvimento em tempo real.
+dev-logs: ## Exibe os logs do serviço de desenvolvimento em tempo real.
 	@echo "📄 Visualizando logs de $(DEV_SERVICE_NAME)..."
 	@$(DEV_COMPOSE) logs -f $(DEV_SERVICE_NAME)
 
 # Permite executar comandos dentro do contêiner. O padrão é abrir um shell.
 # Exemplo de uso: make exec cmd="python -V"
 cmd := bash
-exec: ## Executa um comando no contêiner. Ex: make exec cmd="ls -la"
+dev-exec: ## Executa um comando no contêiner. Ex: make exec cmd="ls -la"
 	@echo "💻 Executando comando no contêiner $(DEV_SERVICE_NAME)..."
 	@$(DEV_COMPOSE) exec $(DEV_SERVICE_NAME) $(cmd)
 
